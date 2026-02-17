@@ -2,7 +2,6 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, Play, Square } from "lucide-react";
 import CameraFeed, { CameraFeedHandle } from "@/components/CameraFeed";
-import { FaceMesh } from "@mediapipe/face_mesh";
 
 const statusStyles: Record<string, string> = {
   awake: "bg-status-awake",
@@ -23,7 +22,7 @@ const DetectionPage = () => {
   const navigate = useNavigate();
 
   const cameraRef = useRef<CameraFeedHandle>(null);
-  const faceMeshRef = useRef<FaceMesh | null>(null);
+  const faceMeshRef = useRef<any>(null);
   const animationRef = useRef<number | null>(null);
 
   // Timers
@@ -40,7 +39,7 @@ const DetectionPage = () => {
   const [detecting, setDetecting] = useState(false);
   const [status, setStatus] = useState<string>("idle");
 
-  // ---------------- BEEP ----------------
+  // ================= BEEP =================
 
   const startBeep = useCallback(() => {
     if (oscillatorRef.current) return;
@@ -79,18 +78,30 @@ const DetectionPage = () => {
     }
   }, [status, startBeep, stopBeep]);
 
-  // ---------------- START ----------------
+  // ================= START =================
 
   const handleStart = async () => {
     try {
       console.log("🚀 Starting detection...");
+
       await cameraRef.current?.startCamera();
 
       const videoElement = cameraRef.current?.getVideoElement?.();
-      if (!videoElement) return;
+      if (!videoElement) {
+        console.error("❌ Video element not available");
+        return;
+      }
 
-      const faceMesh = new FaceMesh({
-        locateFile: (file) =>
+      // ✅ Get FaceMesh from window (CDN)
+      const FaceMeshConstructor = (window as any).FaceMesh;
+
+      if (!FaceMeshConstructor) {
+        console.error("❌ FaceMesh not loaded from CDN");
+        return;
+      }
+
+      const faceMesh = new FaceMeshConstructor({
+        locateFile: (file: string) =>
           `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
       });
 
@@ -115,9 +126,7 @@ const DetectionPage = () => {
         const distance = (a: any, b: any) =>
           Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 
-        // ==================================================
-        // 👁 EYE ASPECT RATIO (EAR)
-        // ==================================================
+        // ================= EAR =================
 
         const leftEAR =
           (distance(landmarks[160], landmarks[144]) +
@@ -153,9 +162,7 @@ const DetectionPage = () => {
           closedEyeStartRef.current = null;
         }
 
-        // ==================================================
-        // 🥱 YAWN (MAR)
-        // ==================================================
+        // ================= YAWN =================
 
         const mouthRatio =
           distance(landmarks[13], landmarks[14]) /
@@ -183,9 +190,7 @@ const DetectionPage = () => {
           yawnStartRef.current = null;
         }
 
-        // ==================================================
-        // ⬇ HEAD NOD (Pitch)
-        // ==================================================
+        // ================= HEAD NOD =================
 
         const nose = landmarks[1];
 
@@ -217,9 +222,7 @@ const DetectionPage = () => {
           headDownStartRef.current = null;
         }
 
-        // ==================================================
-        // ↔ FACE TILT (Roll)
-        // ==================================================
+        // ================= FACE TILT =================
 
         const leftEyeOuter = landmarks[33];
         const rightEyeOuter = landmarks[263];
@@ -231,15 +234,6 @@ const DetectionPage = () => {
 
         console.log("🧭 Face tilt angle:", angle.toFixed(2));
 
-        const TILT_THRESHOLD = 15; // degrees
-
-        if (angle > TILT_THRESHOLD) {
-          console.log("↘ Head tilted RIGHT");
-        } else if (angle < -TILT_THRESHOLD) {
-          console.log("↙ Head tilted LEFT");
-        }
-
-        // If nothing triggered
         if (
           avgEAR >= EAR_THRESHOLD &&
           mouthRatio <= YAWN_THRESHOLD &&
@@ -263,11 +257,11 @@ const DetectionPage = () => {
 
       console.log("✅ Detection running");
     } catch (error) {
-      console.error("Error starting detection:", error);
+      console.error("❌ Error starting detection:", error);
     }
   };
 
-  // ---------------- STOP ----------------
+  // ================= STOP =================
 
   const handleStop = () => {
     console.log("🛑 Stopping detection");
