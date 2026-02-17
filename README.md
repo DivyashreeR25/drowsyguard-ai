@@ -1,73 +1,157 @@
-# Welcome to your Lovable project
+# DrowsyGuard – AI-Based Drowsiness Detection System
 
-## Project info
+DrowsyGuard is a real-time, browser-based drowsiness detection system built using React, TypeScript, and MediaPipe FaceMesh. The application detects fatigue-related behaviors such as prolonged eye closure, yawning, head nodding, and excessive head tilt using facial landmark analysis.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+All processing is performed locally in the browser without backend inference, ensuring privacy and efficient deployment.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## Live Demo
 
-**Use Lovable**
+Deployed Application:
+https://drowsyguard-ai.vercel.app/
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## Overview
 
-**Use your preferred IDE**
+DrowsyGuard uses MediaPipe FaceMesh to extract 468 facial landmarks from a live webcam stream. Geometric relationships between specific landmark points are used to calculate fatigue indicators.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+The system monitors:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+* Eye Aspect Ratio (EAR) for prolonged eye closure
+* Mouth Aspect Ratio (MAR) for yawning detection
+* Nose displacement for head nod detection
+* Eye-line angle for face tilt detection
 
-Follow these steps:
+An alarm is triggered when drowsiness conditions persist beyond configured time thresholds.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Key Features
 
-# Step 3: Install the necessary dependencies.
-npm i
+* Real-time webcam-based facial landmark detection
+* Eye closure detection using EAR
+* Yawn detection using MAR
+* Head nod detection via nose displacement tracking
+* Face tilt detection using roll angle calculation
+* Timed threshold validation to prevent false positives
+* Client-side inference with no image uploads
+* Fully deployable on free hosting platforms
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+---
+
+## Technology Stack
+
+Frontend
+
+* React (Vite)
+* TypeScript
+* Tailwind CSS
+* Lucide Icons
+
+Computer Vision
+
+* MediaPipe FaceMesh
+* Landmark-based geometric calculations
+
+Deployment
+
+* Vercel (CI/CD via GitHub integration)
+
+---
+
+## Detection Logic Summary
+
+### Eye Aspect Ratio (EAR)
+
+Average EAR is calculated using vertical and horizontal distances between eye landmarks.
+
+Condition:
+Average EAR < 0.23 sustained for more than 1.5 seconds
+
+### Mouth Aspect Ratio (MAR)
+
+Mouth opening ratio is calculated using vertical and horizontal mouth landmarks.
+
+Condition:
+MAR > 0.6 sustained for more than 1.2 seconds
+
+### Head Nod Detection
+
+Nose vertical displacement is compared against a baseline.
+
+Condition:
+Nose drop > 0.08 sustained for more than 1.2 seconds
+
+### Face Tilt Detection
+
+Tilt angle is calculated using the angle between the outer eye landmarks.
+
+Condition:
+Absolute angle > 15 degrees (logged as tilt behavior)
+
+---
+
+## Project Structure
+
+```
+src/
+ ├── components/
+ │    └── CameraFeed.tsx
+ ├── pages/
+ │    └── DetectionPage.tsx
+ ├── App.tsx
+ └── main.tsx
+```
+
+---
+
+## Installation
+
+Clone the repository:
+
+```
+git clone https://github.com/DivyashreeR25/drowsyguard-ai.git
+cd drowsyguard-ai
+```
+
+Install dependencies:
+
+```
+npm install
+```
+
+Run locally:
+
+```
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Deployment
 
-**Use GitHub Codespaces**
+The project is deployed using Vercel.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Each push to the main branch triggers automatic deployment via continuous integration.
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## Privacy and Security
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+* No images are uploaded to any server.
+* No backend processing is involved.
+* All facial landmark inference runs entirely within the user's browser.
+* No user data is stored.
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## Author
 
-## Can I connect a custom domain to my Lovable project?
+Divyashree R
+AI and Full-Stack Developer
 
-Yes, you can!
+GitHub: [https://github.com/DivyashreeR25](https://github.com/DivyashreeR25)
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
